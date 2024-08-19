@@ -9,34 +9,35 @@
 </head>
 <body>
     <div class="header">
-        <div class="title">Library</div>
+        <span class="title">Library</span>
         <button>Sign Up</button>
     </div>
     <div class="main">
+        <div class="emptyText"> Your library is empty. Go and grab some books! </div>
         <div class="cardcontainer"></div>
         <dialog id="addDialog">
             <form>
                 <p>
                     <label>
                         Title of the book:
-                        <input id="title" type="text"/> 
+                        <input id="title" type="text" placeholder="Title" required> 
                     </label>
                     <label>
                         Author of the book:
-                        <input id="author" type="text"/> 
+                        <input id="author" type="text" placeholder="Author" required> 
                     </label>
                     <label>
                         Number of Pages:
-                        <input id="pages" type="number"/> 
+                        <input id="pages" type="number" placeholder="Number of pages" min="1" max="99999" required> 
                     </label>
                     <label>
                         Have you read this book before?
-                        <input id="readstatus" type="text"/> 
+                        <input id="readstatus" type="checkbox"> 
                     </label>
                 </p>
                 <div>
-                    <button id="cancelBtn">Cancel</button>
-                    <button id="confirmBtn">Confirm</button>
+                    <button id="cancelBtn" type="button">Cancel</button>
+                    <button id="confirmBtn" type="submit">Add Book</button>
                 </div>
             </form>
         </dialog>
@@ -44,6 +45,5 @@
             <button id="showDialog">Add</button>
         </p>
     </div>
-    <div class="footer">Footer</div>
 </body>
 </html>

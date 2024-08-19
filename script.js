@@ -2,45 +2,108 @@
 const myLibrary = [];
 const bookContainer = document.querySelector(".cardcontainer");
 
+// Global input variable
+const titleInput = document.querySelector("#title");
+const authorInput = document.querySelector("#author");
+const pagesInput = document.querySelector("#pages");
+const readStatusInput = document.querySelector("#readstatus");
+
 // Constructor containing the infos about the title, author, pages, and read status.
 function Book(title, author, pages, readstatus) {
     this.title = title;
     this.author = author;
     this.pages = pages;
-    this.readstat = readstatus;
-    this.info = function () {
-        return (this.title + " by " + this.author + ", " + this.pages + ", " + this.readstat);
-    };
+    this.readstatus = readstatus;
 }
 
-// This function includes the book object into the array
-function addBookToLibrary(book) {
-    myLibrary.push(book);
+// Define the .info() and .isRead() function on the prototype object.
+// Significantly better memory usage than putting into the constructor
+Book.prototype.info = function() {
+    return (this.title + " by " + this.author + ", " + this.pages + " pages");
 }
 
-// Created some objects so that I can see how it looks like
-const book1 = new Book ("Life of Pie", "Yann Martel", "234 pages", "read");
-const book2 = new Book ("What is Justice", "Bernie Sanders", "234 pages", "not read yet");
-const book3 = new Book ("Hamlet", "Shakespeare", "234 pages", "not read yet");
+Book.prototype.isRead = function() {
+    return (this.readstatus ? "Read" : "Unread");
+}
+
+Book.prototype.toggleReadStatus = function() {
+    this.readstatus = !this.readstatus;
+}
+
+// This function updates the placeholder text based on the existence of the books in the library
+function updateMainText() {
+    const mainText = document.querySelector(".emptyText");
+    if (myLibrary.length === 0) {
+        mainText.style.display = "block";
+    } else {
+        mainText.style.display = "none";
+    }
+}
+
+// This function creates dynamic book object by calling the constructor
+function addBookToLibrary() {
+    // Get the values of the input from the modal
+    const title = titleInput.value;
+    const author = authorInput.value;
+    const pages = pagesInput.value;
+    // This input has a type of "checkbox" so we use .checked instead of .value
+    const readStatus = readStatusInput.checked;
 
 
-// Calling the function that pushes the objects into the array.
-addBookToLibrary(book1);
-addBookToLibrary(book2);
-addBookToLibrary(book3);
+    /*********************** Construct Book objects ************************/
+    // Use the retrieved value as a parameter to dynamically add the books in library
+    const dynamicBook = new Book (title, author, pages, readStatus);
+    // Store the book object into the library array
+    myLibrary.push(dynamicBook);
+    updateMainText();
 
-
-// Loop through the library array and display as a card.
-myLibrary.forEach(function(book) {
+    /*********** DOM manipulation ************/
+    // Now, populate the elements so that we can display the added books
     const card = document.createElement("div");
     card.classList.add("card");
 
+    // Create p and button element
     const bookInfo = document.createElement("p");
-    bookInfo.textContent = book.info();
+    bookInfo.textContent = dynamicBook.info();
+    const readBtn = document.createElement("button");
+    readBtn.textContent = dynamicBook.isRead();
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Remove";
+    removeBtn.setAttribute("data-index", myLibrary.length-1);
 
+    // When remove button is clicked
+    removeBtn.addEventListener("click", function() {
+        const index = this.getAttribute("data-index");
+        myLibrary.splice(index, 1);
+        bookContainer.removeChild(card);
+
+        updateDataAttribute(index);
+        updateMainText();
+    });
+
+    // When read/unread button is clicked
+    readBtn.addEventListener("click", function() {
+        // Change the read status of the book
+        dynamicBook.toggleReadStatus();
+        // Update the display accordingly to the status
+        readBtn.textContent = dynamicBook.isRead();
+    })
+
+    // Now, append everything to display in the library
     card.appendChild(bookInfo);
+    card.appendChild(readBtn);
+    card.appendChild(removeBtn);
     bookContainer.appendChild(card);
-});
+}
+
+// Function to update the index of remove button when one is removed from the array
+function updateDataAttribute(startIndex) {
+    const removeButtons = document.querySelectorAll("button[data-index]");
+    for (let i = startIndex; i < removeButtons.length; i++) {
+        removeButtons[i].setAttribute("data-index", i);
+    };
+};
+
 
 /***************************************************************
 *                       Modal section                          *
@@ -48,7 +111,6 @@ myLibrary.forEach(function(book) {
 
 const addButton = document.getElementById("showDialog");
 const addDialog = document.getElementById("addDialog");
-const outputBox = document.querySelector("output");
 const confirmBtn = addDialog.querySelector("#confirmBtn");
 const cancelBtn = addDialog.querySelector("#cancelBtn");
 
@@ -64,27 +126,11 @@ confirmBtn.addEventListener("click", (event) => {
     // O/w, this library would refresh and the added books will disappear
     event.preventDefault();
 
-    // This line of code will prevent the modal from keep staying opened after clicking the confirm button
-    addDialog.close();
-
-    // Get the values of the input from the modal
-    const title = document.querySelector("#title").value;
-    const author = document.querySelector("#author").value;
-    const pages = document.querySelector("#pages").value;
-    const readStatus = document.querySelector("#readstatus").value;
-
-    // Use the retrieved value as a parameter to dynamically add the books in library
-    const dynamicBook = new Book (title, author, pages, readStatus);
-
-    // Now, populate the elements so that we can display the added books
-    const card = document.createElement("div");
-    card.classList.add("card");
-
-    const bookInfo = document.createElement("p");
-    bookInfo.textContent = dynamicBook.info();
-
-    card.appendChild(bookInfo);
-    bookContainer.appendChild(card);
+    // Check the validity - need this to due to the preventDefault
+    const form = document.querySelector("form");
+    form.checkValidity()
+        ? (addDialog.close(), addBookToLibrary(), clearInput())
+        : form.reportValidity();
 });
 
 // When cancel button is clicked
@@ -94,4 +140,13 @@ cancelBtn.addEventListener("click", (event) => {
     // This will stop the page to refreshing and getting rid of all the books in the library
     event.preventDefault();
     addDialog.close();
+    clearInput();
 })
+
+// A function that clears up the input
+function clearInput() {
+    titleInput.value = '';
+    authorInput.value = '';
+    pagesInput.value = '';
+    readStatusInput.checked = false;
+} 
