@@ -14,7 +14,7 @@ function Book(title, author, pages, readstatus) {
     this.author = author;
     this.pages = pages;
     this.readstatus = readstatus;
-}
+} 
 
 // Define the .info() and .isRead() function on the prototype object.
 // Significantly better memory usage than putting into the constructor
@@ -28,6 +28,7 @@ Book.prototype.isRead = function() {
 
 Book.prototype.toggleReadStatus = function() {
     this.readstatus = !this.readstatus;
+    
 }
 
 // This function updates the placeholder text based on the existence of the books in the library
